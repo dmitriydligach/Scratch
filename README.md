@@ -1,2 +1,4 @@
 # Scratch
-Just scratching
+
+Stuff that doesn't fit anywhere else
+
