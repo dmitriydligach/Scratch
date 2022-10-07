@@ -55,12 +55,24 @@ def main():
   """Main street"""
 
   model = get_model()
+  train_dataset, validation_dataset, test_dataset = get_data()
 
   model.compile(loss="binary_crossentropy",
                 optimizer="rmsprop",
                 metrics=["accuracy"])
+  callbacks = [keras.callbacks.ModelCheckpoint(
+    filepath="convnet_from_scratch.keras",
+    save_best_only=True,
+    monitor="val_loss")]
+  history = model.fit(
+    train_dataset,
+    epochs=30,
+    validation_data=validation_dataset,
+    callbacks=callbacks)
 
-  train_dataset, validation_dataset, test_dataset = get_data()
+  test_model = keras.models.load_model("convnet_from_scratch.keras")
+  test_loss, test_acc = test_model.evaluate(test_dataset)
+  print(f"Test accuracy: {test_acc:.3f}")
 
 if __name__ == "__main__":
 
