@@ -60,6 +60,24 @@ def get_model():
 
   return model
 
+def tf_dataset_example():
+  """Tensorflow is tense"""
+
+  train_dataset, validation_dataset, test_dataset = get_data()
+
+  # dataset object yields batches of 180x180 RGB images
+  for data_batch, labels_batch in train_dataset:
+    print("data batch shape:", data_batch.shape)
+    print("labels batch shape:", labels_batch.shape)
+
+    print("image as a floating-point tensor:", data_batch[10, :, :, :].shape)
+    print("image as a floating-point tensor:", data_batch[10, :, :, :])
+
+    plt.imshow(data_batch[20, :, :, :].numpy().astype("uint8"))
+    plt.show()
+
+    break
+
 def data_augmentation_example():
   """This is augmenting"""
 
@@ -91,7 +109,7 @@ def main():
     filepath="cnn_with_augmentation.keras",
     save_best_only=True,
     monitor="val_loss")]
-  history = model.fit(
+  model.fit(
     train_dataset,
     epochs=30,
     validation_data=validation_dataset,
@@ -103,6 +121,5 @@ def main():
 
 if __name__ == "__main__":
 
-  # data_augmentation_example()
-
+  # tf_dataset_example()
   main()
