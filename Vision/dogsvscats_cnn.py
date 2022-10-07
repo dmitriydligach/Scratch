@@ -39,7 +39,7 @@ def get_model():
   inputs = keras.Input(shape=(180, 180, 3))
 
   x = data_augmentation(inputs)
-  x = layers.Rescaling(1. / 255)(inputs)
+  x = layers.Rescaling(1. / 255)(x)
 
   x = layers.Conv2D(filters=32, kernel_size=3, activation="relu")(x)
   x = layers.MaxPooling2D(pool_size=2)(x)
@@ -88,7 +88,7 @@ def main():
                 optimizer="rmsprop",
                 metrics=["accuracy"])
   callbacks = [keras.callbacks.ModelCheckpoint(
-    filepath="convnet_from_scratch.keras",
+    filepath="cnn_with_augmentation.keras",
     save_best_only=True,
     monitor="val_loss")]
   history = model.fit(
