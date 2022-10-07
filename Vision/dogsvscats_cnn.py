@@ -31,9 +31,16 @@ def get_data():
 def get_model():
   """Get us on CNN"""
 
+  data_augmentation = keras.Sequential([
+      layers.RandomFlip("horizontal"),
+      layers.RandomRotation(0.1),
+      layers.RandomZoom(0.2)])
+
   inputs = keras.Input(shape=(180, 180, 3))
 
+  x = data_augmentation(inputs)
   x = layers.Rescaling(1. / 255)(inputs)
+
   x = layers.Conv2D(filters=32, kernel_size=3, activation="relu")(x)
   x = layers.MaxPooling2D(pool_size=2)(x)
   x = layers.Conv2D(filters=64, kernel_size=3, activation="relu")(x)
@@ -43,13 +50,33 @@ def get_model():
   x = layers.Conv2D(filters=256, kernel_size=3, activation="relu")(x)
   x = layers.MaxPooling2D(pool_size=2)(x)
   x = layers.Conv2D(filters=256, kernel_size=3, activation="relu")(x)
+
   x = layers.Flatten()(x)
+  x = layers.Dropout(0.5)(x)
 
   outputs = layers.Dense(1, activation="sigmoid")(x)
 
   model = keras.Model(inputs=inputs, outputs=outputs)
 
   return model
+
+def data_augmentation_example():
+  """This is augmenting"""
+
+  train_dataset, validation_dataset, test_dataset = get_data()
+
+  data_augmentation = keras.Sequential([
+      layers.RandomFlip("horizontal"),
+      layers.RandomRotation(0.1),
+      layers.RandomZoom(0.2)])
+
+  plt.figure(figsize=(10, 10))
+  for images, _ in train_dataset.take(1):
+      for i in range(9):
+          augmented_images = data_augmentation(images)
+          ax = plt.subplot(3, 3, i + 1)
+          plt.imshow(augmented_images[0].numpy().astype("uint8"))
+          plt.axis("off")
 
 def main():
   """Main street"""
@@ -75,5 +102,7 @@ def main():
   print(f"Test accuracy: {test_acc:.3f}")
 
 if __name__ == "__main__":
+
+  # data_augmentation_example()
 
   main()
