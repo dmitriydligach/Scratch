@@ -88,15 +88,33 @@ def train(n_training_episodes,
             q[state][action] = q[state][action] + \
                 lr * (reward + gamma * np.max(q[new_state]) - q[state][action])
 
-            print("updated q[state][action] to ", q[state][action])
-
             if terminated or truncated:
                 break
 
             # we're now in the new state
             state = new_state
 
+    # save q table to file to use in testing
+    np.save("qtable.npy", qtable)
+
     return q
+
+def evaluate():
+    """Evaluate the Q table"""
+
+    qtable = np.load("qtable.npy")
+    state, info = env.reset()
+
+    for _ in range(max_steps):
+
+        action = greedy_policy(qtable, state)
+        new_state, reward, terminated, truncated, info = env.step(action)
+
+        if terminated or truncated:
+            print("we're terminated!")
+            break
+
+        state = new_state
 
 if __name__ == "__main__":
 
@@ -116,14 +134,16 @@ if __name__ == "__main__":
     qtable = initialize_q_table(state_space, action_space)
     print("Q table before training:\n", qtable)
 
-    qtable = train(
-        n_training_episodes,
-        min_epsilon,
-        max_epsilon,
-        decay_rate,
-        env,
-        max_steps,
-        qtable)
-    print("Q table after training:\n", qtable)
+    # qtable = train(
+    #     n_training_episodes,
+    #     min_epsilon,
+    #     max_epsilon,
+    #     decay_rate,
+    #     env,
+    #     max_steps,
+    #     qtable)
+    # print("Q table after training:\n", qtable)
+
+    evaluate()
 
     env.close()
