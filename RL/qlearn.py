@@ -13,7 +13,7 @@ n_training_episodes = 10000
 lr = 0.7
 
 # Evaluation parameters
-n_eval_episodes = 100  # Total number of test episodes
+n_eval_episodes = 25  # Total number of test episodes
 
 # Environment parameters
 env_id = "FrozenLake-v1"  # Name of the environment
@@ -59,7 +59,7 @@ def train(env,
           q):
     """Train the Q table"""
 
-    for episode in range(n_training_episodes):
+    for episode in tqdm.tqdm(range(n_training_episodes)):
 
         # reduce epsilon (because we need less and less exploration)
         epsilon = min_epsilon + (max_epsilon - min_epsilon) * np.exp(-decay_rate * episode)
@@ -165,7 +165,7 @@ if __name__ == "__main__":
     # Testing
     #
 
-    # env = gym.make(env_id, render_mode=None)
+    env = gym.make(env_id, is_slippery=False, render_mode="human")
     mean_reward, std_reward = evaluate(env, max_steps, n_eval_episodes, qtable)
 
     print("mean reward: ", mean_reward)
