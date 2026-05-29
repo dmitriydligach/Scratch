@@ -35,7 +35,7 @@ def greedy_policy(qtable, state):
 
     return np.argmax(qtable[state][:])
 
-def epsilon_greedy_policy(qtable, state, epsilon):
+def epsilon_greedy_policy(env, qtable, state, epsilon):
     """Exploration with probability epsilon"""
 
     # Randomly generate a number between 0 and 1
@@ -64,7 +64,7 @@ def train(env,
         # reduce epsilon (because we need less and less exploration)
         epsilon = min_epsilon + (max_epsilon - min_epsilon) * np.exp(-decay_rate * episode)
 
-        # reset the environment
+        # no seed to get a different trajectory every time
         state, info = env.reset()
 
         step = 0
@@ -75,7 +75,7 @@ def train(env,
         for step in range(max_steps):
 
             # choose the action At using epsilon greedy policy
-            action = epsilon_greedy_policy(q, state, epsilon)
+            action = epsilon_greedy_policy(env, q, state, epsilon)
 
             # take the action and observe Rt+1 and St+1
             new_state, reward, terminated, truncated, info = env.step(action)
@@ -102,14 +102,14 @@ def train(env,
 def evaluate(env,
              max_steps,
              n_eval_episodes,
-             qtable,
-             seed=42):
+             qtable):
     """Let's evaluate our Q table"""
 
     episode_rewards = []
     for episode in tqdm.tqdm(range(n_eval_episodes)):
 
-        state, info = env.reset(seed=42)
+        # no seed to get a different trajectory every time
+        state, info = env.reset()
 
         step = 0
         truncated = False
@@ -160,7 +160,6 @@ if __name__ == "__main__":
         decay_rate,
         max_steps,
         qtable)
-    print("Q table after training:\n", qtable)
 
     #
     # Testing
