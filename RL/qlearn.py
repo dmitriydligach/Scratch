@@ -50,11 +50,11 @@ def epsilon_greedy_policy(qtable, state, epsilon):
 
     return action
 
-def train(n_training_episodes,
+def train(env,
+          n_training_episodes,
           min_epsilon,
           max_epsilon,
           decay_rate,
-          env,
           max_steps,
           q):
     """Train the Q table"""
@@ -109,7 +109,6 @@ def evaluate(env,
     episode_rewards = []
     for episode in tqdm.tqdm(range(n_eval_episodes)):
 
-        # state, info = env.reset(seed=seed[episode])
         state, info = env.reset(seed=42)
 
         step = 0
@@ -139,29 +138,35 @@ def evaluate(env,
 
 if __name__ == "__main__":
 
+    #
+    # Training
+    #
+
     env = gym.make(env_id, render_mode=None)
     observation, info = env.reset(seed=42)
 
-    print("observation space", env.observation_space)
-    state_space = env.observation_space.n
-    print("There are ", state_space, " possible states")
-    action_space = env.action_space.n
-    print("There are ", action_space, " possible actions\n")
+    state_space_size = env.observation_space.n
+    print("There are ", state_space_size, " possible states")
+    action_space_size = env.action_space.n
+    print("There are ", action_space_size, " possible actions\n")
 
-    qtable = initialize_q_table(state_space, action_space)
+    qtable = initialize_q_table(state_space_size, action_space_size)
 
     qtable = train(
+        env,
         n_training_episodes,
         min_epsilon,
         max_epsilon,
         decay_rate,
-        env,
         max_steps,
         qtable)
     print("Q table after training:\n", qtable)
 
-    env = gym.make(env_id, render_mode=None)
-    qtable = np.load("qtable.npy")
+    #
+    # Testing
+    #
+
+    # env = gym.make(env_id, render_mode=None)
     mean_reward, std_reward = evaluate(env, max_steps, n_eval_episodes, qtable)
 
     print("mean reward: ", mean_reward)
