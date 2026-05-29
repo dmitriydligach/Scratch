@@ -31,7 +31,7 @@ def initialize_q_table(state_space, action_space):
     return np.zeros((state_space, action_space))
 
 def greedy_policy(qtable, state):
-    "Return action with the highest Q value"""
+    """Return action with the highest Q value"""
 
     return np.argmax(qtable[state][:])
 
@@ -142,7 +142,7 @@ if __name__ == "__main__":
     # Training
     #
 
-    env = gym.make(env_id, render_mode=None)
+    env = gym.make(env_id, is_slippery=False, render_mode=None)
     observation, info = env.reset(seed=42)
 
     state_space_size = env.observation_space.n
