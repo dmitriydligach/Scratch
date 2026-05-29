@@ -60,11 +60,9 @@ def train(n_training_episodes,
     """Train the Q table"""
 
     for episode in range(n_training_episodes):
-        print("\nepisode: ", episode)
 
         # reduce epsilon (because we need less and less exploration)
         epsilon = min_epsilon + (max_epsilon - min_epsilon) * np.exp(-decay_rate * episode)
-        print("epsilon", epsilon, "\n")
 
         # reset the environment
         state, info = env.reset()
@@ -82,16 +80,13 @@ def train(n_training_episodes,
             # take the action and observe Rt+1 and St+1
             new_state, reward, terminated, truncated, info = env.step(action)
 
-            print("action: ", action)
-            print("new state: ", new_state)
-            print("reward: ", reward, "\n")
+            # print("action: ", action)
+            # print("new state: ", new_state)
+            # print("reward: ", reward, "\n")
 
             # sarsamax / q-learning with temporal differences
             q[state][action] = q[state][action] + \
                 lr * (reward + gamma * np.max(q[new_state]) - q[state][action])
-
-            if reward > 0:
-                print(q)
 
             if terminated or truncated:
                 break
@@ -100,39 +95,56 @@ def train(n_training_episodes,
             state = new_state
 
     # save q table to file to use in testing
-    np.save("qtable.npy", qtable)
+    np.save("qtable.npy", q)
 
     return q
 
-def evaluate():
-    """Evaluate the Q table"""
+def evaluate(env,
+             max_steps,
+             n_eval_episodes,
+             qtable,
+             seed=42):
+    """Let's evaluate our Q table"""
 
-    qtable = np.load("qtable.npy")
-    state, info = env.reset()
+    episode_rewards = []
+    for episode in tqdm.tqdm(range(n_eval_episodes)):
 
-    for _ in range(max_steps):
+        # state, info = env.reset(seed=seed[episode])
+        state, info = env.reset(seed=42)
 
-        action = greedy_policy(qtable, state)
-        new_state, reward, terminated, truncated, info = env.step(action)
+        step = 0
+        truncated = False
+        terminated = False
+        total_rewards_ep = 0 # total reward per episode
 
-        if terminated or truncated:
-            print("we're terminated!")
-            break
+        for step in range(max_steps):
 
-        state = new_state
+            action = greedy_policy(qtable, state)
+            new_state, reward, terminated, truncated, info = env.step(action)
+            total_rewards_ep += reward
+
+            if terminated or truncated:
+                break
+
+            state = new_state
+
+        episode_rewards.append(total_rewards_ep)
+
+    print("episode_rewards: ", episode_rewards)
+
+    mean_reward = np.mean(episode_rewards)
+    std_reward = np.std(episode_rewards)
+
+    return mean_reward, std_reward
 
 if __name__ == "__main__":
 
-    # initialize the environment
-    env = gym.make(env_id, render_mode="human")
-
-    # reset the environment to generate the first observation
+    env = gym.make(env_id, render_mode=None)
     observation, info = env.reset(seed=42)
-    print("observation space", env.observation_space)
 
+    print("observation space", env.observation_space)
     state_space = env.observation_space.n
     print("There are ", state_space, " possible states")
-
     action_space = env.action_space.n
     print("There are ", action_space, " possible actions\n")
 
@@ -148,6 +160,11 @@ if __name__ == "__main__":
         qtable)
     print("Q table after training:\n", qtable)
 
-    # evaluate()
+    env = gym.make(env_id, render_mode=None)
+    qtable = np.load("qtable.npy")
+    mean_reward, std_reward = evaluate(env, max_steps, n_eval_episodes, qtable)
+
+    print("mean reward: ", mean_reward)
+    print("std reward: ", std_reward)
 
     env.close()
